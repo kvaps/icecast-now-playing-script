@@ -10,27 +10,36 @@ Code by Jude (<a href="mailto:surftheair@gmail.com">surftheair@gmail.com</a>)
 <?php include("icecast.php");?>
 
 <!--Edit the followings as you like, this is just an example -->
-Station title: <?php echo ($radio_info['title']);?><br />
-Description: <?php echo ($radio_info['description']);?><br />
-Conten type: <?php echo ($radio_info['content_type']);?><br />
-Mount start: <?php echo ($radio_info['mount_start']);?><br />
-Bitrate: <?php echo ($radio_info['bit_rate']);?><br />
-Current listners: <?php echo ($radio_info['listeners']);?><br />
-Peak listeners: <?php echo ($radio_info['most_listeners']);?><br />
-Genre: <?php echo ($radio_info['genre']);?><br />
-Station URL: <?php echo ($radio_info['url']);?><br />
-Now palying: <?php echo ($radio_info['current_song']);?><br />
-Artist: <?php echo($radio_info['now_playing']['artist']);?><br />
-Track: <?php echo($radio_info['now_playing']['track']);?><br />
-Album art URL: <?php echo($album_art);?><br />
-Track introduction: <?php echo($track_info);?><br />
-Track URL on last.fm: <?php echo($track_lastfm_url);?><br />
-Artist URL on last.fm: <?php echo($artist_lastfm_url);?><br />
-Album title: <?php echo($album_title);?><br />
-Album URL on last.fm: <?php echo($album_lastfm_url);?><br />
-Download link on Google Music(China): <?php echo($track_download);?><br />
-Local cache of album art: <?php echo($local_album_art_uri);?></br>
-Lyric of the current song: <?php echo($track_lyric);?></br>
+<table border="1">
+<tr><td>Station title</td><td><?php echo ($stream_title);?></td></tr>
+<tr><td>Description</td><td><?php echo ($stream_description);?></td></tr>
+<tr><td>Conten type</td><td><?php echo ($stream_content_type);?></td></tr>
+<tr><td>Mount start</td><td><?php echo ($stream_mount_start);?></td></tr>
+<tr><td>Bitrate</td><td><?php echo ($stream_bit_rate);?></td></tr>
+<tr><td>Current listners</td><td><?php echo ($listeners);?></td></tr>
+<tr><td>Peak listeners</td><td><?php echo ($peak_listeners);?></td></tr>
+<tr><td>Genre</td><td><?php echo ($stream_genre);?></td></tr>
+<tr><td>Station URL</td><td><?php echo ($stream_url);?></td></tr>
+<tr><td>Now palying</td><td><?php echo ($current_artist_song);?></td></tr>
+<tr><td>Artist</td><td><?php echo($artist);?></td></tr>
+<tr><td>Track</td><td><?php echo($current_song);?></td></tr>
+<tr><td>Album art URL (small)</td><td><?php echo($album_art_small);?></td></tr>
+<tr><td>Album art URL (medium)</td><td><?php echo($album_art_medium);?></td></tr>
+<tr><td>Album art URL (large)</td><td><?php echo($album_art_large);?></td></tr>
+<tr><td>Album art URL (extralarge)</td><td><?php echo($album_art_extralarge);?></td></tr>
+<tr><td>Track URL on last.fm</td><td><?php echo($track_lastfm_url);?></td></tr>
+<tr><td>Artist URL on last.fm</td><td><?php echo($artist_lastfm_url);?></td></tr>
+<tr><td>Album title</td><td><?php echo($album_title);?></td></tr>
+<tr><td>Album URL on last.fm</td><td><?php echo($album_lastfm_url);?></td></tr>
+<tr><td>Download link on Google Music(China)</td><td><?php echo($track_download);?></td></tr>
+<tr><td>Local cache of album art</td><td><?php echo($local_album_art_uri);?></br>
+<tr><td>Track summary</td><td><?php echo($track_summary);?></td></tr>
+<tr><td>Track introduction</td><td><?php echo($track_info);?></td></tr>
+<tr><td>Album summary</td><td><?php echo($album_summary);?></td></tr>
+<tr><td>Album information</td><td><?php echo($album_info);?></td></tr>
+<tr><td>Album release date</td><td><?php echo($album_releasedate);?></td></tr>
+<tr><td>Lyric of the current song</td><td><?php echo($track_lyric);?></td></tr>
+</table>
 </body>
 </html>
 

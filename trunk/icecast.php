@@ -1,12 +1,15 @@
 <?php 
-// By Jude (surftheair@gmail.com), some code from phil@simplegaming.net
+// By Jude (surftheair@gmail.com)
 
 // configurations
-$SERVER = 'http://zlz-stream10.streaming.init7.net:80'; //URL TO YOUR ICECAST SERVER 
-$STATS_FILE = '/status.xsl?mount=/1/rsp/mp3_128'; //PATH TO STATUS.XSL PAGE OF YOUR MOUNT POINT
-$LASTFM_API= 'dd40af1da9977c679287dd2d78f017b4'; //YOUR API KEY FROM LAST.FM, GET AT http://www.last.fm/api/account
-
-///////////////////// END OF CONFIGURATION --- DO NOT EDIT BELOW THIS LINE \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ 
+$SERVER = 'http://example.com:8000'; //URL TO YOUR ICECAST SERVER 
+$STATS_FILE = '/status.xsl?mount=your_mount_point'; //PATH TO STATUS.XSL PAGE OF YOUR MOUNT POINT
+$lastfm_api = 'your_lastfm_api_key'; //your last.fm API key, get from http://www.last.fm/api/account
+$default_album_art = '/cache/default.jpg';//the default album art image, will be used if failed to get from last.fm's API
+$enable_lastfm_api = 'true'; //get information of the current song from last.fm
+$enable_get_album_info = 'true'; //get extra information of the album from last.fm, if enabled, may increase script execute time
+$enable_get_lyrics = 'true'; //get lyrics of the current song using chartlyrics.com's API
+$enable_cache_album_art = 'true';//cache album art images to local server
 
 //create a new curl resource 
 $ch = curl_init(); 
@@ -54,81 +57,124 @@ if(preg_match_all("/$search_for/siU",$output,$matches)) {
 } 
 
 //sort our temp array into our ral array 
-$radio_info['title'] = $temp_array[0]; 
-$radio_info['description'] = $temp_array[1]; 
-$radio_info['content_type'] = $temp_array[2]; 
-$radio_info['mount_start'] = $temp_array[3]; 
-$radio_info['bit_rate'] = $temp_array[4]; 
-$radio_info['listeners'] = $temp_array[5]; 
-$radio_info['most_listeners'] = $temp_array[6]; 
-$radio_info['genre'] = $temp_array[7]; 
-$radio_info['url'] = $temp_array[8];
-$radio_info['current_song'] = $temp_array[9];
+$stream_title = $temp_array[0]; 
+$stream_description = $temp_array[1]; 
+$stream_content_type = $temp_array[2]; 
+$stream_mount_start = $temp_array[3]; 
+$stream_bit_rate = $temp_array[4]; 
+$listeners = $temp_array[5]; 
+$peak_listeners = $temp_array[6]; 
+$stream_genre = $temp_array[7]; 
+$stream_url = $temp_array[8];
+$current_artist_song = $temp_array[9];
 
 $x = explode(" - ",$temp_array[9]); 
-$radio_info['now_playing']['artist'] = $x[0]; 
-$radio_info['now_playing']['track'] = $x[1];
+$artist = $x[0]; 
+$current_song = $x[1];
+//above code from phil@simplegaming.net
 
-//check if the current song has changed
-$last_song = file_get_contents("cache/history.txt");
 
-if($last_song !== $radio_info['current_song']){
+//get information of the current song use last.fm's API
+function getTrackInfo(){
+	global $lastfm_api,$artist,$current_song,$album_art_small,$album_art_medium,$album_art_large,$album_art_extralarge,$track_summary,$track_info,$track_lastfm_url,$artist_lastfm_url,$album_title,$album_lastfm_url,$track_download;
+	$xml_request_url = 'http://ws.audioscrobbler.com/2.0/?method=track.getinfo&artist='.$artist.'&track='.$current_song.'&api_key='.$lastfm_api;
+	$xml = new SimpleXMLElement($xml_request_url, null, true);
+		if($xml->track->album->image){
+			$album_art_small = $xml->track->album->image[0];
+			$album_art_medium = $xml->track->album->image[1];
+			$album_art_large = $xml->track->album->image[2];
+			$album_art_extralarge = $xml->track->album->image[3];
+			}
+		if ($xml->track->wiki->summary){
+			$track_summary = $xml->track->wiki->summary;
+			$track_info = $xml->track->wiki->content;
+			}
+		$track_lastfm_url = $xml->track->url;
+		$artist_lastfm_url = $xml->track->artist->url;
+		if($xml->track->album->title){
+			$album_title = $xml->track->album->title;
+			$album_lastfm_url = $xml->track->album->url;
+			}}
+	
+//get extra information of the album
+function getAlbumInfo(){
+	global $artist,$album_title,$lastfm_api,$album_releasedate,$album_summary,$album_info,$track_list;
+	$xml_request_url = 'http://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist='.$artist.'&album='.$album_title.'&api_key='.$lastfm_api;
+	$xml = new SimpleXMLElement($xml_request_url, null, true);
+	if ($xml->album->releasedate){
+		$album_releasedate = $xml->album->releasedate;}
+/*	if($xml->album->tracks->track){
+		$track_list = array();
+	foreach($xml->album->tracks as $value){
+		foreach($value->track as $test){
+			echo('name='.$test->name.'<br/>');
+			echo('url='.$test->url.'<br/>');
+			array_push($track_list,'<a href="'.$test->url.'">'.$test->name.'</a>');}}}
+*/			
+	if ($xml->album->wiki->summary){
+		$album_summary = $xml->album->wiki->summary;
+		$album_info = $xml->album->wiki->content;
+		}}
 
-//if the current song has changed, refetch information of the new track from remote APIs 
-$fp=fopen("cache/history.txt","w");
-fwrite($fp,$radio_info['current_song']);
-fclose($fp);
-
-//get information of the current song use last.fm's API, by Jude
-$xml_request_url = 'http://ws.audioscrobbler.com/2.0/?method=track.getinfo&artist='.$radio_info['now_playing']['artist'].'&track='.$radio_info['now_playing']['track'].'&api_key='.$LASTFM_API;
-$xml = new SimpleXMLElement($xml_request_url, null, true);
-	if($xml->track->album->image){
-		$album_art = $xml->track->album->image[2];
-		}
-	else{$album_art = '/static/default.jpg';
-	}
-	if ($xml->track->wiki->summary){
-		$track_info = $xml->track->wiki->summary;
-		}
-	else{$track_info = "No information found for this track, try searching for <a href='http://www.google.com/search?q=".$radio_info['current_song']."'>".$radio_info['current_song']."</a> on Google";}
-$track_lastfm_url = $xml->track->url;
-$artist_lastfm_url = $xml->track->artist->url;
-	if($xml->track->album->title){
-		$album_title = $xml->track->album->title;
-		$album_lastfm_url = $xml->track->album->url;
-		}
-	else{
-		$album_title = 'Not found';
-		$album_lastfm_url = 'http://www.google.com/search?q='.$radio_info['current_song'];
-		}
-$track_download = 'http://www.google.cn/music/search?q='.$radio_info['current_song'];
-
-//cache album art images to local server
-$filename = end(explode('/',$album_art));
-$local_album_art_uri = '/cache/'.$filename;
-$local_album_art = 'cache/'.$filename;
-if (!is_file($local_album_art)){
-copy($album_art,$local_album_art );}
-
+//cache album art images to local server, change the image size if you want
+function cacheAlbumArt(){
+	global $album_art_large,$local_album_art_uri;
+	$filename = end(explode('/',$album_art_large));
+	$local_album_art_uri = '/cache/'.$filename;
+	$local_album_art = 'cache/'.$filename;
+	if (!is_file($local_album_art)){
+		copy($album_art_large,$local_album_art );
+		}}
+		
 //get lyrics from chartlyrics.com's API
-$xml_request_url = 'http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist='.$radio_info['now_playing']['artist'].'&song='.$radio_info['now_playing']['track'];
-$xml = new SimpleXMLElement($xml_request_url, null, true);
-if($xml->LyricId == '0'){
-$track_lyric = 'Lyrics not found for this track';}
-else{
-$track_lyric = $xml->Lyric;}
+function getLyric(){
+	global $artist,$current_song,$track_lyric;
+	$xml_request_url = 'http://api.chartlyrics.com/apiv1.asmx/SearchLyricDirect?artist='.$artist.'&song='.$current_song;
+	$xml = new SimpleXMLElement($xml_request_url, null, true);
+	if($xml->LyricId !== '0'){
+		$track_lyric = $xml->Lyric;
+		}}
 
-//write variables to file
-$variables = "<?php \$local_album_art_uri = \"$local_album_art_uri\";\$track_info=\"$track_info\" ;\$album_title= \"$album_title\";\$album_lastfm_url = \"$album_lastfm_url\";\$track_lastfm_url=\"$track_lastfm_url\";\$artist_lastfm_url=\"$artist_lastfm_url\";\$track_lyric=\"$track_lyric\";\$album_art=\"$album_art\";\$track_download=\"$track_download\";?>";
+//wtite new variables to file
+function writeVariables(){
+	global $local_album_art_uri,$track_info,$album_title,$album_lastfm_url,$track_lastfm_url,$artist_lastfm_url,$track_lyric,$album_art,$track_download,$track_summary,$album_summary,$album_info,$source,$album_art_small,$album_art_medium,$album_art_large,$album_art_extralarge,$album_releasedate;
+	$variables = '<?php $local_album_art_uri = rawurldecode("'.rawurlencode($local_album_art_uri).'");$track_info = rawurldecode("'.rawurlencode($track_info).'");$album_title= rawurldecode("'.rawurlencode($album_title).'");$album_lastfm_url = rawurldecode("'.rawurlencode($album_lastfm_url).'");$track_lastfm_url=rawurldecode("'.rawurlencode($track_lastfm_url).'");$artist_lastfm_url=rawurldecode("'.rawurlencode($artist_lastfm_url).'");$track_lyric=rawurldecode("'.rawurlencode($track_lyric).'");$album_art=rawurldecode("'.rawurlencode($album_art).'");$track_download=rawurldecode("'.rawurlencode($track_download).'");$track_summary = rawurldecode("'.rawurlencode($track_summary).'");$album_summary = rawurldecode("'.rawurlencode($album_summary).'");$album_info= rawurldecode("'.rawurlencode($album_info).'");$album_art_small = rawurldecode("'.rawurlencode($album_art_small).'");$album_art_medium= rawurldecode("'.rawurlencode($album_art_medium).'");$album_art_large= rawurldecode("'.rawurlencode($album_art_large).'");$album_art_extralarge = rawurldecode("'.rawurlencode($album_art_extralarge).'");$album_releasedate = rawurldecode("'.rawurlencode($album_releasedate).'");?>';
 $fp=fopen("cache/variales.php","w");
-fwrite($fp,$variables);
-fclose($fp);
-$source = 'remote API';
-}
+	fwrite($fp,$variables);
+	fclose($fp);
+	$source = 'remote API';
+	}
+		
+		
+//check if the current song has changed,if the current song has changed, refetch information of the new track from remote APIs 
+$last_song = file_get_contents("cache/history.txt");
+if($last_song !== $current_song){
 
-//if the current song is not changed, get the information from local file, so no need to frequently fetch form API again, which may result in baning
+//default value for variables if failed to get value from remote API or feature is disabled
+	$album_art_small =$album_art_medium = $album_art_large = $album_art_extralarge = $default_album_art;
+	$track_info  = $track_summary = "No information found for this track, try searching for <a href='http://www.google.com/search?q=".$current_song."'>".$current_song."</a> on Google";
+	$album_title = 'Not found';
+	$album_lastfm_url = 'http://www.google.com/search?q='.$current_song;
+	$track_download = 'http://www.google.cn/music/search?q='.$current_artist_song;
+	$album_summary = $album_info = 'No information found for this album, try searching for <a href="http://www.google.com/search?q='.$current_artist_song.'">'.	$current_artist_song.'</a> on Google';
+	$album_releasedate = 'Unknown';
+	$track_lyric = 'Lyrics not found for this track';
+
+	$fp=fopen("cache/history.txt","w");
+	fwrite($fp,$current_song);
+	fclose($fp);
+	if($enable_lastfm_api == 'true'){
+		getTrackInfo();}
+	if($enable_get_album_info == 'true'){
+		getAlbumInfo();}
+	if($enable_cache_album_art  == 'true'){
+		cacheAlbumArt();}
+	if($enable_get_lyrics == 'true'){
+		getLyric();}
+	writeVariables();
+	}
 else{
-include("cache/variales.php");
-$source = 'cached file';
-}
+	include("cache/variales.php");
+	$source = 'cached file';
+	}
 ?>
