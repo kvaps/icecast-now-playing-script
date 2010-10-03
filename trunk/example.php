@@ -7,7 +7,7 @@
 <p>
 Code by Jude (<a href="mailto:surftheair@gmail.com">surftheair@gmail.com</a>)
 </p>
-<?php include("icecast_test.php");?>
+<?php include("icecast.php");?>
 
 <!--Edit the followings as you like, this is just an example -->
 <table border="1">
