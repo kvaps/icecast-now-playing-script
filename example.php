@@ -7,7 +7,7 @@
 <p>
 Code by Jude (<a href="mailto:surftheair@gmail.com">surftheair@gmail.com</a>)
 </p>
-<?php include("icecast.php");?>
+<?php include("icecast_test.php");?>
 
 <!--Edit the followings as you like, this is just an example -->
 <table border="1">
@@ -39,6 +39,7 @@ Code by Jude (<a href="mailto:surftheair@gmail.com">surftheair@gmail.com</a>)
 <tr><td>Album information</td><td><?php echo($album_info);?></td></tr>
 <tr><td>Album release date</td><td><?php echo($album_releasedate);?></td></tr>
 <tr><td>Lyric of the current song</td><td><?php echo($track_lyric);?></td></tr>
+<tr><td>Album track list</td><td><?php foreach($track_list as $track){echo ($track.'<br />');}?></td></tr>
 </table>
 </body>
 </html>
