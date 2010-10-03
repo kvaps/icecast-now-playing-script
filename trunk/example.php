@@ -40,6 +40,10 @@ Code by Jude (<a href="mailto:surftheair@gmail.com">surftheair@gmail.com</a>)
 <tr><td>Album release date</td><td><?php echo($album_releasedate);?></td></tr>
 <tr><td>Lyric of the current song</td><td><?php echo($track_lyric);?></td></tr>
 <tr><td>Album track list</td><td><?php foreach($track_list as $track){echo ($track.'<br />');}?></td></tr>
+<tr><td>Artist summary</td><td><?php echo($artist_summary);?></td></tr>
+<tr><td>Artist information</td><td><?php echo($artist_info);?></td></tr>
+<tr><td>Artist album list</td><td><?php foreach($album_list as $album){echo ($album.'<br />');}?></td></tr>
+
 </table>
 </body>
 </html>

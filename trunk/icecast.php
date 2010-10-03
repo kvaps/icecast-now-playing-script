@@ -8,6 +8,7 @@ $lastfm_api = 'your_lastfm_api_key'; //your last.fm API key, get from http://www
 $default_album_art = '/cache/default.jpg';//the default album art image, will be used if failed to get from last.fm's API
 $enable_lastfm_api = 'true'; //get information of the current song from last.fm
 $enable_get_album_info = 'true'; //get extra information of the album from last.fm, if enabled, may increase script execute time
+$enable_get_artist_info = 'true'; //get extra information of the artist from last.fm, if enabled, may increase script execute time
 $enable_get_lyrics = 'true'; //get lyrics of the current song using chartlyrics.com's API
 $enable_cache_album_art = 'true';//cache album art images to local server
 
@@ -97,11 +98,14 @@ function getTrackInfo(){
 	
 //get extra information of the album
 function getAlbumInfo(){
-	global $artist,$album_title,$lastfm_api,$album_releasedate,$album_summary,$album_info,$track_list,$track_list;
+	global $artist,$album_title,$lastfm_api,$album_releasedate,$album_summary,$album_info,$track_list;
 	$xml_request_url = 'http://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist='.$artist.'&album='.$album_title.'&api_key='.$lastfm_api;
 	$xml = new SimpleXMLElement($xml_request_url, null, true);
 	if ($xml->album->releasedate){
-		$album_releasedate = $xml->album->releasedate;}
+		$album_releasedate = $xml->album->releasedate;
+		$x = explode(",",$album_releasedate);
+		$album_releasedate = $x[0]; 
+}
 //get track list and urls		
 	if($xml->album->tracks->track){
 		$track_list = array();
@@ -113,6 +117,25 @@ function getAlbumInfo(){
 		$album_summary = $xml->album->wiki->summary;
 		$album_info = $xml->album->wiki->content;
 		}}
+		
+//get extra information of the artist		
+function getArtistInfo(){
+	global $artist,$lastfm_api,$artist_summary,$artist_info,$album_list;
+	$xml_request_url = 'http://ws.audioscrobbler.com/2.0/?method=artist.gettopalbums&artist='.$artist.'&api_key='.$lastfm_api;
+	$xml = new SimpleXMLElement($xml_request_url, null, true);
+	if ($xml->topalbums->album){
+		$album_list= array();
+	foreach($xml->topalbums as $value){
+		foreach($value->album as $test){
+			array_push($album_list,'<a href="'.$test->url.'">'.$test->name.'</a>');}}}
+			
+	$xml_request_url = 'http://ws.audioscrobbler.com/2.0/?method=artist.getinfo&artist='.$artist.'&api_key='.$lastfm_api;
+	$xml = new SimpleXMLElement($xml_request_url, null, true);
+	if ($xml->artist->bio->summary){
+		$artist_summary = $xml->artist->bio->summary;
+		$artist_info = $xml->artist->bio->content;
+		}}
+		
 
 //cache album art images to local server, change the image size if you want
 function cacheAlbumArt(){
@@ -135,10 +158,11 @@ function getLyric(){
 
 //wtite new variables to file
 function writeVariables(){
-	global $local_album_art_uri,$track_info,$album_title,$album_lastfm_url,$track_lastfm_url,$artist_lastfm_url,$track_lyric,$album_art,$track_download,$track_summary,$album_summary,$album_info,$source,$album_art_small,$album_art_medium,$album_art_large,$album_art_extralarge,$album_releasedate,$track_list;
+	global $local_album_art_uri,$track_info,$album_title,$album_lastfm_url,$track_lastfm_url,$artist_lastfm_url,$track_lyric,$album_art,$track_download,$track_summary,$album_summary,$album_info,$source,$album_art_small,$album_art_medium,$album_art_large,$album_art_extralarge,$album_releasedate,$track_list,$album_list,$artist_summary,$artist_info;
 	$temp_track_list = implode(",",$track_list);
-	$variables = '<?php $local_album_art_uri = rawurldecode("'.rawurlencode($local_album_art_uri).'");$track_info = rawurldecode("'.rawurlencode($track_info).'");$album_title= rawurldecode("'.rawurlencode($album_title).'");$album_lastfm_url = rawurldecode("'.rawurlencode($album_lastfm_url).'");$track_lastfm_url=rawurldecode("'.rawurlencode($track_lastfm_url).'");$artist_lastfm_url=rawurldecode("'.rawurlencode($artist_lastfm_url).'");$track_lyric=rawurldecode("'.rawurlencode($track_lyric).'");$album_art=rawurldecode("'.rawurlencode($album_art).'");$track_download=rawurldecode("'.rawurlencode($track_download).'");$track_summary = rawurldecode("'.rawurlencode($track_summary).'");$album_summary = rawurldecode("'.rawurlencode($album_summary).'");$album_info= rawurldecode("'.rawurlencode($album_info).'");$album_art_small = rawurldecode("'.rawurlencode($album_art_small).'");$album_art_medium= rawurldecode("'.rawurlencode($album_art_medium).'");$album_art_large= rawurldecode("'.rawurlencode($album_art_large).'");$album_art_extralarge = rawurldecode("'.rawurlencode($album_art_extralarge).'");$album_releasedate = rawurldecode("'.rawurlencode($album_releasedate).'");$track_list = explode(",",rawurldecode("'.rawurlencode($temp_track_list).'"));?>';
-	$fp=fopen("cache/variales.php","w");
+	$temp_album_list = implode(",",$album_list);
+	$variables = '<?php $local_album_art_uri = rawurldecode("'.rawurlencode($local_album_art_uri).'");$track_info = rawurldecode("'.rawurlencode($track_info).'");$album_title= rawurldecode("'.rawurlencode($album_title).'");$album_lastfm_url = rawurldecode("'.rawurlencode($album_lastfm_url).'");$track_lastfm_url=rawurldecode("'.rawurlencode($track_lastfm_url).'");$artist_lastfm_url=rawurldecode("'.rawurlencode($artist_lastfm_url).'");$track_lyric=rawurldecode("'.rawurlencode($track_lyric).'");$album_art=rawurldecode("'.rawurlencode($album_art).'");$track_download=rawurldecode("'.rawurlencode($track_download).'");$track_summary = rawurldecode("'.rawurlencode($track_summary).'");$album_summary = rawurldecode("'.rawurlencode($album_summary).'");$album_info= rawurldecode("'.rawurlencode($album_info).'");$album_art_small = rawurldecode("'.rawurlencode($album_art_small).'");$album_art_medium= rawurldecode("'.rawurlencode($album_art_medium).'");$album_art_large= rawurldecode("'.rawurlencode($album_art_large).'");$album_art_extralarge = rawurldecode("'.rawurlencode($album_art_extralarge).'");$album_releasedate = rawurldecode("'.rawurlencode($album_releasedate).'");$track_list = explode(",",rawurldecode("'.rawurlencode($temp_track_list).'"));$artist_summary= rawurldecode("'.rawurlencode($artist_summary).'");$artist_info= rawurldecode("'.rawurlencode($artist_info).'");$album_list = explode(",",rawurldecode("'.rawurlencode($temp_album_list).'"));?>';
+	$fp=fopen("cache/variables.php","w");
 	fwrite($fp,$variables);
 	fclose($fp);
 	$source = 'remote API';
@@ -159,6 +183,8 @@ if($last_song !== $current_song){
 	$album_releasedate = 'Unknown';
 	$track_lyric = 'Lyrics not found for this track';
 	$track_list = array('No track found for this album');
+	$album_list = array('No album found for this artist');
+	$artist_summary = $artist_info = 'No information found for this album, try searching for <a href="http://www.google.com/search?q='.$artist.'">'.$artist.'</a> on Google';
 
 	$fp=fopen("cache/history.txt","w");
 	fwrite($fp,$current_song);
@@ -167,6 +193,8 @@ if($last_song !== $current_song){
 		getTrackInfo();}
 	if($enable_get_album_info == 'true'){
 		getAlbumInfo();}
+	if($enable_get_artist_info == 'true'){
+		getArtistInfo();}
 	if($enable_cache_album_art  == 'true'){
 		cacheAlbumArt();}
 	if($enable_get_lyrics == 'true'){
@@ -174,7 +202,7 @@ if($last_song !== $current_song){
 	writeVariables();
 	}
 else{
-	include("cache/variales.php");
+	include("cache/variables.php");
 	$source = 'cached file';
 	}
 ?>
