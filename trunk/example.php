@@ -11,6 +11,7 @@ Code by Jude (<a href="mailto:surftheair@gmail.com">surftheair@gmail.com</a>)
 
 <!--Edit the followings as you like, this is just an example -->
 <table border="1">
+<tr><td>Status</td><td><?php echo ($status); ?></td></tr>
 <tr><td>Station title</td><td><?php echo ($stream_title); ?></td></tr>
 <tr><td>Description</td><td><?php echo ($stream_description); ?></td></tr>
 <tr><td>Conten type</td><td><?php echo ($stream_content_type); ?></td></tr>

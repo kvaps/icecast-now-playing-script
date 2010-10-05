@@ -74,6 +74,13 @@ $artist = $x[0];
 $current_song = $x[1];
 //above code from phil@simplegaming.net
 
+if ($stream_bit_rate){
+	$status = 'On Air';
+}
+else{
+	$status = 'Off Air';
+}
+
 //get information of the current song use last.fm's API
 function getTrackInfo()
 {
