@@ -3,6 +3,7 @@ This is a list of available variables which you can use to get the output as you
 
 <table border="1">
 <tr><td width="220">Descciption</td><td width="300">Variable name</td></tr>
+<tr><td>Server status</td><td>$status</td></tr>
 <tr><td>Station title</td><td>$stream_title</td></tr>
 <tr><td>Station description</td><td>$stream_description</td></tr>
 <tr><td>Conten type</td><td>$stream_content_type</td></tr>
