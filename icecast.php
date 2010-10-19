@@ -2,8 +2,8 @@
 // By Jude (surftheair@gmail.com)
 
 // configurations
-$SERVER = 'http://example.com:8000'; //URL TO YOUR ICECAST SERVER
-$STATS_FILE = '/status.xsl?mount=your_mount_point'; //PATH TO STATUS.XSL PAGE OF YOUR MOUNT POINT
+$server  = 'http://example.com:8000'; //url to your icecast server, with "http://", without the ending "/"
+$mount_point = '/status.xsl?mount=your_mount_point'; //your radio's mount point, with the leading "/"
 $lastfm_api = 'your_lastfm_api_key'; //your last.fm API key, get from http://www.last.fm/api/account
 $default_album_art = '/cache/default.jpg'; //the default album art image, will be used if failed to get from last.fm's API
 $enable_lastfm_api = 'true'; //get information of the current song from last.fm
@@ -16,7 +16,7 @@ $enable_cache_album_art = 'true'; //cache album art images to local server
 $ch = curl_init(); 
 
 //set url 
-curl_setopt($ch,CURLOPT_URL,$SERVER.$STATS_FILE); 
+curl_setopt($ch,CURLOPT_URL,$server.'/status.xsl?mount='.$mount_point); 
 
 //return as a string 
 curl_setopt($ch,CURLOPT_RETURNTRANSFER,1); 
@@ -173,38 +173,42 @@ function writeVariables(){
 	$source = 'remote API';
 	}
 		
-		
-//check if the current song has changed,if the current song has changed, refetch information of the new track from remote APIs 
-$last_song = file_get_contents("cache/history.txt");
-if($last_song !== $current_song){
+//check if the radio is online
+if ($status == 'On Air'){
+
+//check if the current song has changed,if the current song has changed, refetch information of the new track from remote APIs
+	$last_song = file_get_contents("cache/history.txt");
+	if($last_song !== $current_song){
 
 //default value for variables if failed to get value from remote API or feature is disabled
-	$album_art_small =$album_art_medium = $album_art_large = $album_art_extralarge = $default_album_art;
-	$track_info  = $track_summary = "No information found for this track, try searching for <a href='http://www.google.com/search?q=".$current_song."'>".$current_song."</a> on Google";
-	$album_title = 'Not found';
-	$album_lastfm_url = 'http://www.google.com/search?q='.$current_song;
-	$track_download = 'http://www.google.cn/music/search?q='.$current_artist_song;
-	$album_summary = $album_info = 'No information found for this album, try searching for <a href="http://www.google.com/search?q='.$current_artist_song.'">'.$current_artist_song.'</a> on Google';
-	$album_releasedate = 'Unknown';
-	$track_lyric = 'Lyrics not found for this track';
-	$track_list = array('No track found for this album');
-	$album_list = array('No album found for this artist');
-	$artist_summary = $artist_info = 'No information found for this album, try searching for <a href="http://www.google.com/search?q='.$artist.'">'.$artist.'</a> on Google';
-	file_put_contents('cache/history.txt',$current_song);
-	if($enable_lastfm_api == 'true'){
+		$album_art_small =$album_art_medium = $album_art_large = $album_art_extralarge = $default_album_art;
+		$track_info  = $track_summary = "No information found for this track, try searching for <a href='http://www.google.com/search?q=".$current_song."'>".$current_song."</a> on Google";
+		$album_title = 'Not found';
+		$album_lastfm_url = 'http://www.google.com/search?q='.$current_song;
+		$track_download = 'http://www.google.cn/music/search?q='.$current_artist_song;
+		$album_summary = $album_info = 'No information found for this album, try searching for <a href="http://www.google.com/search?q='.$current_artist_song.'">'.$current_artist_song.'</a> on Google';
+		$album_releasedate = 'Unknown';
+		$track_lyric = 'Lyrics not found for this track';
+		$track_list = array('No track found for this album');
+		$album_list = array('No album found for this artist');
+		$artist_summary = $artist_info = 'No information found for this album, try searching for <a href="http://www.google.com/search?q='.$artist.'">'.$artist.'</a> on Google';
+		file_put_contents('cache/history.txt',$current_song);
+		
+		if($enable_lastfm_api == 'true'){
 		getTrackInfo();}
-	if($enable_get_album_info == 'true'){
+		if($enable_get_album_info == 'true'){
 		getAlbumInfo();}
-	if($enable_get_artist_info == 'true'){
+		if($enable_get_artist_info == 'true'){
 		getArtistInfo();}
-	if($enable_cache_album_art  == 'true'){
+		if($enable_cache_album_art  == 'true'){
 		cacheAlbumArt();}
-	if($enable_get_lyrics == 'true'){
+		if($enable_get_lyrics == 'true'){
 		getLyric();}
-	writeVariables();
-	}
-else{
-	include("cache/variables.php");
-	$source = 'cached file';
+		writeVariables();
+		}
+	else{
+		include("cache/variables.php");
+		$source = 'cached file';
+		}
 	}
 ?>
