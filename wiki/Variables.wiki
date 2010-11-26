@@ -1,4 +1,6 @@
 #labels Phase-Implementation
+Note: the followings have been changed, will update later
+
 This is a list of available variables which you can use to get the output as you wish
 
 <table border="1">
