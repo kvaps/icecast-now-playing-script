@@ -109,7 +109,6 @@ function getAlbumInfo($artist, $album, $api){
 		$album_info['summary'] = rawurlencode($xml->album->wiki->summary);
 		$album_info['info'] = rawurlencode($xml->album->wiki->content);
 	}
-	echo $xml_request_url;
 	return $album_info;
 }
 		
