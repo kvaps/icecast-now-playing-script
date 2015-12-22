@@ -12,3 +12,6 @@ define(GET_TRACK_BUY_LINK, true); //get buy links on Amazon, iTune and 7digital
 define(GET_LYRICS, true); //get lyrics of the current song using chartlyrics.com's API
 define(CACHE_ALBUM_ART, true);//cache album art images to local server
 define(RECORD_HISTORY, true);//record play history of your radio
+define(RECORD_JINGLE_TO_HISTORY, false); //record jingle to play history of your radio
+define(JINGLE_SONG_NAME, 'Radio Example'); // Jingle name
+define(JINGLE_ALBUM_ART, 'cache/art.jpg'); //the album art image, for Jingle

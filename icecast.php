@@ -248,6 +248,9 @@ function cacheHistory($stream){
 	if($stream['song'] == 'Not found'){
 		return;
 	}
+	if((RECORD_JINGLE_TO_HISTORY == FALSE) AND ($stream['info']['artist'] == JINGLE_SONG_NAME)){
+		return;
+	}
 	$year = date('Y');
 	$month = date('m');
 	$day = date('d');
