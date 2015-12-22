@@ -254,27 +254,33 @@ function cacheHistory($stream){
 	$year = date('Y');
 	$month = date('m');
 	$day = date('d');
-	if(!is_dir('history')){
-		mkdir('history', 0777);
+	if(!is_dir('history/')){
+		mkdir('history/', 0777);
 	}
 	if(!is_dir('history/'.$year)){
 		mkdir('history/'.$year);
 	}
 	if(!is_dir('history/'.$year.'/'.$month)){
-		mkdir('history/'.$year.'/'.$month);
+		mkdir( 'history/'.$year.'/'.$month);
 	}
 	$file = 'history/'.$year.'/'.$month.'/'.$day.'.json';
-	$history['time'] = gmdate('c');
-	$history['artist'] = $stream['info']['artist'];
-	$history['song'] = $stream['info']['song'];
-	$history['image'] = $stream['album']['image_s'];
-	$history['itunes'] = $stream['track']['buylink']['download']['iTunes']['link'];
-	$history['Amazon'] = $stream['track']['buylink']['download']['Amazon']['link'];
+
+	$history = json_decode(@file_get_contents($file), TRUE);
+	$history = array_decode($history);
+	$trackid = count($history);
+	$last_history=end($history); //грабли
+	if($stream['info']['song'] != $last_history['song']) { //грабли
+	$trackid++;
+	} //грабли 
+	$history[$trackid]['time'] = date('H:i:s');
+	$history[$trackid]['description'] = $stream['info']['description'];
+	$history[$trackid]['artist'] = $stream['info']['artist'];
+	$history[$trackid]['song'] = $stream['info']['song'];
+	$history[$trackid]['image'] = $stream['album']['local_image'];
 	$history = array_encode($history);
 	file_put_contents($file, json_encode($history));
 	createHistory();
 }
-
 function createHistory(){
 	$history = json_decode(@file_get_contents('var/history.json'), TRUE);
 	$year = date('Y');
