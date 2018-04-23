@@ -4,6 +4,7 @@
 	http://jude.im/
 	works with Icecast 2.3.2
 */
+$date = date("D M d, Y G:i");
 
 require('config.php');
 $stream = getStreamInfo();
@@ -37,20 +38,21 @@ function obj_to_array($obj){
 }
 
 function getStreamInfo(){
-	$str = @file_get_contents(SERVER.'/status.xsl?mount='.MOUNT);
-	if(preg_match_all('/<td\s[^>]*class=\"streamdata\">(.*)<\/td>/isU', $str, $match)){
+	$str = @file_get_contents(SERVER.'/status-json.xsl?mount='.MOUNT);
+        $data = json_decode($str, TRUE);
+	if($data['icestats']) {
 		$stream['info']['status'] = 'ON AIR';
-		$stream['info']['title'] = $match[1][0]; 
-		$stream['info']['description'] = $match[1][1]; 
-		$stream['info']['type'] = $match[1][2]; 
-		$stream['info']['start'] = $match[1][3]; 
-		$stream['info']['bitrate'] = $match[1][4]; 
-		$stream['info']['listeners'] = $match[1][5]; 
-		$stream['info']['msx_listeners'] = $match[1][6]; 
-		$stream['info']['genre'] = $match[1][7]; 
-		$stream['info']['stream_url'] = $match[1][8];
-		$stream['info']['artist_song'] = $match[1][9];
-			$x = explode(" - ",$match[1][9]); 
+		$stream['info']['title'] = $data['icestats']['source']['server_name'];
+		$stream['info']['description'] = $data['icestats']['source']['server_description'];
+		$stream['info']['type'] = $data['icestats']['source']['server_type'];
+		$stream['info']['start'] = $data['icestats']['source']['stream_start'];
+		$stream['info']['bitrate'] = $data['icestats']['source']['bitrate'];
+		$stream['info']['listeners'] = $data['icestats']['source']['listeners'];
+		$stream['info']['msx_listeners'] = $data['icestats']['source']['listeners'];
+		$stream['info']['genre'] = $data['icestats']['source']['genre'];
+		$stream['info']['stream_url'] = $data['icestats']['source']['server_url'];
+		$stream['info']['artist_song'] = $data['icestats']['source']['title'];
+			$x = explode(" - ",$data['icestats']['source']['title']); 
 		$stream['info']['artist'] = $x[0]; 
 		$stream['info']['song'] = $x[1];
 	}
